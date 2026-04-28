@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Municipalidad de Concepción</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: #fff; overflow-x: hidden; }
+
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px; background: #fff; border-bottom: 1px solid #eee;
+    position: relative; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo-icon { width: 44px; height: 44px; }
+  .logo-text { display: flex; flex-direction: column; line-height: 1.1; }
+  .logo-text span:first-child { font-size: 9px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase; }
+  .logo-text span:last-child { font-size: 18px; font-weight: 800; color: #1a237e; letter-spacing: 1px; text-transform: uppercase; }
+
+  .header-right { display: flex; align-items: center; gap: 14px; }
+
+  .btn-pago {
+    background: #fff; color: #000; font-weight: 700; font-size: 13px;
+    padding: 7px 18px; border-radius: 999px; border: 2px solid #222;
+    cursor: pointer; letter-spacing: 0.3px; white-space: nowrap;
+  }
+
+  .icon-btn { background: none; border: none; cursor: pointer; padding: 4px; color: #1a237e; display: flex; align-items: center; }
+  .icon-btn svg { width: 22px; height: 22px; }
+
+  .hamburger { background: none; border: none; cursor: pointer; padding: 4px; display: flex; flex-direction: column; gap: 5px; }
+  .hamburger span { display: block; width: 24px; height: 2.5px; background: #1a237e; border-radius: 2px; }
+
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .overlay.open { opacity: 1; pointer-events: all; }
+
+  .drawer {
+    position: fixed; top: 0; right: -100%; width: min(340px, 85vw); height: 100vh;
+    background: #0d1b8e; z-index: 300; display: flex; flex-direction: column;
+    transition: right 0.32s cubic-bezier(0.4,0,0.2,1); overflow-y: auto;
+  }
+  .drawer.open { right: 0; }
+
+  .drawer-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px 18px; border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .drawer-logo { display: flex; align-items: center; gap: 10px; }
+  .drawer-logo-text { display: flex; flex-direction: column; line-height: 1.1; }
+  .drawer-logo-text span:first-child { font-size: 8px; color: #fff; letter-spacing: 1px; text-transform: uppercase; opacity: 0.8; }
+  .drawer-logo-text span:last-child { font-size: 16px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .close-btn { background: none; border: none; color: #fff; font-size: 26px; cursor: pointer; line-height: 1; opacity: 0.8; }
+
+  .drawer-nav { flex: 1; padding: 8px 0; }
+
+  .nav-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 28px; color: #fff; font-size: 17px; font-weight: 500;
+    cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.08); user-select: none;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.06); }
+  .nav-item .chevron { font-size: 14px; transition: transform 0.2s; opacity: 0.7; }
+  .nav-item.expanded .chevron { transform: rotate(180deg); }
+
+  .submenu { max-height: 0; overflow: hidden; transition: max-height 0.28s ease; background: rgba(0,0,0,0.18); }
+  .submenu.open { max-height: 300px; }
+  .submenu a {
+    display: block; padding: 12px 28px 12px 40px; color: rgba(255,255,255,0.75);
+    font-size: 14px; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .submenu a:hover { color: #fff; }
+
+  /* ── BOTÓN PAGAR: siempre blanco con letras negras, sin hover que cambie color ── */
+  .nav-pago-wrapper {
+    padding: 20px 28px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+  }
+  .nav-pago-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-weight: 800;
+    font-size: 15px;
+    padding: 13px 20px;
+    border-radius: 999px;
+    border: 2px solid #ffffff;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── HERO ── */
+  .hero { position: relative; width: 100%; height: 420px; overflow: hidden; background: #222; }
+  .slide {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    justify-content: flex-end; padding: 30px 28px 60px;
+    opacity: 0; transition: opacity 0.7s;
+  }
+  .slide.active { opacity: 1; }
+  .slide-bg-1 { background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.65)), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="700" height="420"><rect fill="%23334"/></svg>'); }
+  .slide-bg-2 { background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.65)), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="700" height="420"><rect fill="%23243"/></svg>'); }
+  .slide-bg-3 { background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.65)), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="700" height="420"><rect fill="%23432"/></svg>'); }
+
+  .slide-tag { color: rgba(255,255,255,0.75); font-size: 13px; margin-bottom: 8px; }
+  .slide-title { color: #fff; font-size: 26px; font-weight: 900; line-height: 1.2; margin-bottom: 20px; max-width: 320px; }
+  .slide-btn {
+    display: inline-block; background: #fff; color: #111; font-weight: 700; font-size: 12px;
+    letter-spacing: 1.5px; padding: 12px 32px; border-radius: 999px; border: none;
+    cursor: pointer; text-transform: uppercase; width: fit-content;
+  }
+
+  .slider-arrows { position: absolute; bottom: 16px; right: 20px; display: flex; gap: 8px; }
+  .arrow {
+    width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.25);
+    border: none; color: #fff; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .arrow:hover { background: rgba(255,255,255,0.4); }
+
+  .slider-dots { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.35); border: none; cursor: pointer; padding: 0; transition: background 0.2s; }
+  .dot.active { background: #fff; }
+
+  .wa-fab {
+    position: fixed; bottom: 24px; right: 20px; width: 52px; height: 52px;
+    border-radius: 50%; background: #25D366; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25); z-index: 50;
+  }
+  .wa-fab svg { width: 28px; height: 28px; fill: #fff; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <a class="logo" href="#">
+    <svg class="logo-icon" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="21" stroke="#1a237e" stroke-width="2"/>
+      <text x="22" y="27" text-anchor="middle" font-size="14" fill="#1a237e" font-weight="bold">🏛</text>
+    </svg>
+    <div class="logo-text">
+      <span>Municipalidad de</span>
+      <span>Concepción</span>
+    </div>
+  </a>
+  <div class="header-right">
+    <button class="btn-pago">Pagar</button>
+    <button class="icon-btn" aria-label="Buscar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"/><line x1="17" y1="17" x2="22" y2="22"/>
+      </svg>
+    </button>
+    <button class="hamburger" id="menuBtn">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<div class="overlay" id="overlay"></div>
+
+<nav class="drawer" id="drawer">
+  <div class="drawer-header">
+    <div class="drawer-logo">
+      <svg width="36" height="36" viewBox="0 0 44 44" fill="none">
+        <circle cx="22" cy="22" r="21" stroke="white" stroke-width="2"/>
+        <text x="22" y="27" text-anchor="middle" font-size="14" fill="white" font-weight="bold">🏛</text>
+      </svg>
+      <div class="drawer-logo-text">
+        <span>Municipalidad de</span>
+        <span>Concepción</span>
+      </div>
+    </div>
+    <button class="close-btn" id="closeBtn">✕</button>
+  </div>
+
+  <div class="drawer-nav">
+    <div class="nav-item">Inicio</div>
+    <div class="nav-item">Autoridades</div>
+    <div class="nav-item" onclick="toggleSubmenu(this)">Guía de Trámites <span class="chevron">▾</span></div>
+    <div class="submenu"><a href="#">Habilitaciones</a><a href="#">Certificados</a><a href="#">Licencias</a></div>
+    <div class="nav-item" onclick="toggleSubmenu(this)">Información <span class="chevron">▾</span></div>
+    <div class="submenu"><a href="#">Noticias</a><a href="#">Eventos</a><a href="#">Turismo</a></div>
+    <div class="nav-item" onclick="toggleSubmenu(this)">Transparencia <span class="chevron">▾</span></div>
+    <div class="submenu"><a href="#">Presupuesto</a><a href="#">Licitaciones</a><a href="#">Declaraciones</a></div>
+    <div class="nav-item">Contacto</div>
+  </div>
+
+  <div class="nav-pago-wrapper">
+    <button class="nav-pago-btn">💳 &nbsp;Botón de Pago</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="slide slide-bg-1 active">
+    <div class="slide-tag">Ciudad Universitaria</div>
+    <div class="slide-title">Concepción en el XXV Congreso Nacional y Pre-Congreso Latinoamericano de Sociología Jurídica</div>
+    <button class="slide-btn">Ver Noticia</button>
+  </div>
+  <div class="slide slide-bg-2">
+    <div class="slide-tag">Obras Públicas</div>
+    <div class="slide-title">Nuevas obras de infraestructura para el desarrollo de nuestra ciudad</div>
+    <button class="slide-btn">Ver Noticia</button>
+  </div>
+  <div class="slide slide-bg-3">
+    <div class="slide-tag">Cultura</div>
+    <div class="slide-title">Festival de verano: actividades para toda la familia en el centro cívico</div>
+    <button class="slide-btn">Ver Noticia</button>
+  </div>
+  <div class="slider-dots">
+    <button class="dot active"></button>
+    <button class="dot"></button>
+    <button class="dot"></button>
+  </div>
+  <div class="slider-arrows">
+    <button class="arrow" id="prevBtn">‹</button>
+    <button class="arrow" id="nextBtn">›</button>
+  </div>
+</section>
+
+<button class="wa-fab" aria-label="WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.862L0 24l6.309-1.518A11.946 11.946 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.847 0-3.574-.5-5.065-1.375l-.362-.213-3.746.9.933-3.635-.235-.375A9.945 9.945 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+</button>
+
+<script>
+  const menuBtn = document.getElementById('menuBtn');
+  const closeBtn = document.getElementById('closeBtn');
+  const overlay = document.getElementById('overlay');
+  const drawer = document.getElementById('drawer');
+
+  menuBtn.addEventListener('click', () => { drawer.classList.add('open'); overlay.classList.add('open'); });
+  closeBtn.addEventListener('click', () => { drawer.classList.remove('open'); overlay.classList.remove('open'); });
+  overlay.addEventListener('click', () => { drawer.classList.remove('open'); overlay.classList.remove('open'); });
+
+  function toggleSubmenu(item) {
+    const sub = item.nextElementSibling;
+    const isOpen = sub.classList.contains('open');
+    document.querySelectorAll('.submenu.open').forEach(s => { s.classList.remove('open'); s.previousElementSibling.classList.remove('expanded'); });
+    if (!isOpen) { sub.classList.add('open'); item.classList.add('expanded'); }
+  }
+
+  let current = 0;
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.dot');
+  function goTo(n) {
+    slides[current].classList.remove('active'); dots[current].classList.remove('active');
+    current = (n + slides.length) % slides.length;
+    slides[current].classList.add('active'); dots[current].classList.add('active');
+  }
+  document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
+  document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
+  dots.forEach((d, i) => d.addEventListener('click', () => goTo(i)));
+  setInterval(() => goTo(current + 1), 5000);
+</script>
+</body>
+</html>
